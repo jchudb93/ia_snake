@@ -65,9 +65,9 @@ class Snake(object):
     def __init__(self, start_coord, length=3):
         """
         Create a new snake.
-        
+
         Args:
-            start_coord: A point representing the initial position of the snake. 
+            start_coord: A point representing the initial position of the snake.
             length: An integer specifying the initial length of the snake.
         """
         # Place the snake vertically, heading north.
@@ -123,7 +123,7 @@ class Field(object):
     def __init__(self, level_map=None):
         """
         Create a new Snake field.
-        
+
         Args:
             level_map: a list of strings representing the field objects (1 string per row).
         """
@@ -207,13 +207,13 @@ class Field(object):
     def update_snake_footprint(self, old_head, old_tail, new_head):
         """
         Update field cells according to the new snake position.
-        
+
         Environment must be as fast as possible to speed up agent training.
         Therefore, we'll sacrifice some duplication of information between
         the snake body and the field just to execute timesteps faster.
-        
+
         Args:
-            old_head: position of the head before the move. 
+            old_head: position of the head before the move.
             old_tail: position of the tail before the move.
             new_head: position of the head after the move.
         """

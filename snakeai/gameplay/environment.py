@@ -17,9 +17,9 @@ class Environment(object):
     def __init__(self, config, verbose=1):
         """
         Create a new Snake RL environment.
-        
+
         Args:
-            config (dict): level configuration, typically found in JSON configs.  
+            config (dict): level configuration, typically found in JSON configs.
             verbose (int): verbosity level:
                 0 = do not write any debug information;
                 1 = write a CSV file containing the statistics for every episode;
