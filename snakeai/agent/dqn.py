@@ -11,11 +11,11 @@ class DeepQNetworkAgent(AgentBase):
     def __init__(self, model, num_last_frames=4, memory_size=1000):
         """
         Create a new DQN-based agent.
-        
+
         Args:
             model: a compiled DQN model.
             num_last_frames (int): the number of last frames the agent will consider.
-            memory_size (int): memory size limit for experience replay (-1 for unlimited). 
+            memory_size (int): memory size limit for experience replay (-1 for unlimited).
         """
         assert model.input_shape[1] == num_last_frames, 'Model input shape should be (num_frames, grid_size, grid_size)'
         assert len(model.output_shape) == 2, 'Model output shape should be (num_samples, num_actions)'
@@ -32,9 +32,9 @@ class DeepQNetworkAgent(AgentBase):
     def get_last_frames(self, observation):
         """
         Get the pixels of the last `num_last_frames` observations, the current frame being the last.
-        
+
         Args:
-            observation: observation at the current timestep. 
+            observation: observation at the current timestep.
 
         Returns:
             Observations for the last `num_last_frames` frames.
@@ -47,11 +47,51 @@ class DeepQNetworkAgent(AgentBase):
             self.frames.popleft()
         return np.expand_dims(self.frames, 0)
 
+
+    def guidedRandon(self, observation, numActions):
+        self.food_coord = np.where(observation == 1)
+        self.head_coord = np.where(observation == 2)
+        self.body_coord = np.where(observation == 3)
+
+        diff_x = self.head_coord[1][0] - self.food_coord[1][0]
+        diff_y = self.head_coord[0][0] - self.food_coord[0][0]
+        diff_x_body = self.body_coord[1][0] - self.food_coord[1][0]
+        diff_y_body = self.body_coord[0][0] - self.food_coord[0][0]
+
+        if (diff_y == 0 and diff_x != 0):
+          # la comida esta a la izquierda o derecha y la serpiente esta mirando en esa direccion
+          if ((diff_x > 0 and diff_y_body == 0 and diff_x_body > diff_x) or (diff_x < 0 and diff_y_body == 0 and diff_x_body < diff_x)):
+            return numActions[0]
+
+          # mirando para abajo
+          if (diff_x > 0 and diff_y_body < 0) or (diff_x < 0 and diff_y_body > 0):
+            return numActions[2]
+
+          # mirando para arriba
+          if (diff_x > 0 and diff_y_body > 0) or (diff_x < 0 and diff_y_body < 0):
+            return numActions[1]
+
+        if (diff_x == 0 and diff_y != 0):
+          # la comida esta arriba o abajo y la serpiente esta mirando en esa direccion
+          if ((diff_y > 0 and diff_x_body == 0 and diff_y_body > diff_y) or (diff_y < 0 and diff_x_body == 0 and diff_y_body < diff_y)):
+            return numActions[0] # mantiene su direccion
+
+          # mirando para la derecha
+          if (diff_y > 0 and diff_x_body < 0) or (diff_y < 0 and diff_x_body > 0):
+            return numActions[1]
+
+          # mirando para la izquierda
+          if (diff_y > 0 and diff_x_body > 0) or (diff_y < 0 and diff_x_body < 0):
+            return numActions[2]
+
+        return np.random.choice(numActions)
+
+
     def train(self, env, num_episodes=1000, batch_size=50, discount_factor=0.9, checkpoint_freq=None,
               exploration_range=(1.0, 0.1), exploration_phase_size=0.5):
         """
         Train the agent to perform well in the given Snake environment.
-        
+
         Args:
             env:
                 an instance of Snake environment.
@@ -64,7 +104,7 @@ class DeepQNetworkAgent(AgentBase):
             checkpoint_freq (int):
                 the number of episodes after which a new model checkpoint will be created.
             exploration_range (tuple):
-                a (max, min) range specifying how the exploration rate should decay over time. 
+                a (max, min) range specifying how the exploration rate should decay over time.
             exploration_phase_size (float):
                 the percentage of the training process at which
                 the exploration rate should reach its minimum.
@@ -88,7 +128,8 @@ class DeepQNetworkAgent(AgentBase):
             while not game_over:
                 if np.random.random() < exploration_rate:
                     # Explore: take a random action.
-                    action = np.random.randint(env.num_actions)
+                    #action = np.random.randint(env.num_actions)
+                    action = self.guidedRandon(self, timestep.observation, env.num_actions)
                 else:
                     # Exploit: take the best known action for this state.
                     q = self.model.predict(state)
@@ -135,9 +176,9 @@ class DeepQNetworkAgent(AgentBase):
     def act(self, observation, reward):
         """
         Choose the next action to take.
-        
+
         Args:
-            observation: observable state for the current timestep. 
+            observation: observable state for the current timestep.
             reward: reward received at the beginning of the current timestep.
 
         Returns:
