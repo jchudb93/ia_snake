@@ -78,6 +78,16 @@ def create_dqn_model(env, num_last_frames):
         data_format='channels_first'
     ))
     model.add(Activation('relu'))
+        model.add(Conv2D(
+        32,
+        kernel_size=(3, 3),
+        strides=(1, 1),
+        data_format='channels_first'
+    ))
+    model.add(Activation('relu'))
+    
+    model.add(MaxPooling2D(pool_size=(2, 2), strides=None, padding='valid', data_format=None))
+    model.add(Dropout(0.5))
 
     # Dense layers.
     model.add(Flatten())
