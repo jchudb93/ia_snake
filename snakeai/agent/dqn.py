@@ -48,7 +48,7 @@ class DeepQNetworkAgent(AgentBase):
         return np.expand_dims(self.frames, 0)
 
 
-    def guidedRandon(self, observation, numActions):
+    def guidedRandom(self, observation, numActions):
         self.food_coord = np.where(observation == 1)
         self.head_coord = np.where(observation == 2)
         self.body_coord = np.where(observation == 3)
@@ -129,7 +129,7 @@ class DeepQNetworkAgent(AgentBase):
                 if np.random.random() < exploration_rate:
                     # Explore: take a random action.
                     #action = np.random.randint(env.num_actions)
-                    action = self.guidedRandon(self, timestep.observation, env.num_actions)
+                    action = self.guidedRandom(timestep.observation, env.num_actions)
                 else:
                     # Exploit: take the best known action for this state.
                     q = self.model.predict(state)
